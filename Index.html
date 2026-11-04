@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#160d12">
+  <meta name="description" content="Rosa de Sangue — Crônicas de uma Coroa Partida">
+  <title>Rosa de Sangue</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main id="app">
+    <header>
+      <h1>Rosa de Sangue</h1>
+      <p>Crônicas de uma Coroa Partida</p>
+    </header>
+
+    <section id="campaign">
+      <h2>O destino das coroas está em suas mãos.</h2>
+      <p>Uma história de poder, sangue, alianças e traições.</p>
+      <button id="start-game">Iniciar campanha</button>
+    </section>
+
+    <section id="game" hidden>
+      <div id="scene"></div>
+      <div id="dialogue"></div>
+      <textarea id="player-input" placeholder="Escreva as ações e falas de Kazuki..."></textarea>
+      <button id="send-message">Enviar</button>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
