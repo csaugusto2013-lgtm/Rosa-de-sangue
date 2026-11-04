@@ -27,6 +27,7 @@ startButton.addEventListener("click", () => {
   campaign.hidden = true;
   game.hidden = false;
   scene.textContent = openingScene;
+  input.focus();
 });
 
 async function sendMessage() {
@@ -36,11 +37,6 @@ async function sendMessage() {
 
   dialogue.textContent +=
     (dialogue.textContent ? "\n\n" : "") + "Kazuki: " + message;
-
-  history.push({
-    role: "user",
-    content: message
-  });
 
   input.value = "";
   sendButton.disabled = true;
@@ -53,31 +49,59 @@ async function sendMessage() {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        messages: history
+        messages: [
+          ...history,
+          {
+            role: "user",
+            content: message
+          }
+        ]
       })
     });
 
-    const data = await response.json();
+    let data;
 
-    if (!response.ok) {
-      throw new Error(data.error || "Falha na API.");
+    try {
+      data = await response.json();
+    } catch {
+      throw new Error("O servidor retornou uma resposta inválida.");
     }
 
-    const answer = data.reply || "Nenhuma resposta recebida.";
+    if (!response.ok) {
+      throw new Error(
+        data.details || data.error || "Falha na comunicação com a API."
+      );
+    }
+
+    const answer = data.reply;
+
+    if (typeof answer !== "string" || !answer.trim()) {
+      throw new Error("A API não retornou uma resposta válida.");
+    }
+
+    history.push(
+      {
+        role: "user",
+        content: message
+      },
+      {
+        role: "assistant",
+        content: answer
+      }
+    );
 
     dialogue.textContent += "\n\n" + answer;
 
-    history.push({
-      role: "assistant",
-      content: answer
-    });
-
   } catch (error) {
     dialogue.textContent +=
-      "\n\n[Erro de comunicação: " + error.message + "]";
+      "\n\n[Mensagem não enviada ao narrador: " +
+      error.message +
+      "]";
+
   } finally {
     sendButton.disabled = false;
     sendButton.textContent = "Enviar";
+    input.focus();
   }
 }
 
@@ -93,6 +117,6 @@ input.addEventListener("keydown", event => {
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("/sw.js")
-      .catch(error => console.error(error));
+      .catch(error => console.error("Falha ao registrar o Service Worker:", error));
   });
 }
