@@ -1,0 +1,11 @@
+{
+  "name": "Rosa de Sangue",
+  "short_name": "Rosa de Sangue",
+  "description": "Crônicas de uma Coroa Partida",
+  "lang": "pt-BR",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#160d12",
+  "theme_color": "#160d12"
+}
