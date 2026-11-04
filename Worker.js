@@ -1,4 +1,3 @@
-
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -22,7 +21,7 @@ export default {
         }
 
         const body = await request.json();
-        const messages = body.messages || [];
+        const messages = body.messages;
 
         if (!Array.isArray(messages) || messages.length === 0) {
           return Response.json(
@@ -31,31 +30,83 @@ export default {
           );
         }
 
-        const contents = messages.map(message => ({
-          role: message.role === "assistant" ? "model" : "user",
-          parts: [{ text: String(message.content || "") }]
-        }));
+        const contents = messages
+          .filter(message =>
+            message &&
+            typeof message.content === "string" &&
+            ["user", "assistant"].includes(message.role)
+          )
+          .map(message => ({
+            role: message.role === "assistant" ? "model" : "user",
+            parts: [{ text: message.content }]
+          }));
+
+        if (contents.length === 0) {
+          return Response.json(
+            { error: "O histórico enviado está vazio ou inválido." },
+            { status: 400 }
+          );
+        }
 
         const systemInstruction = {
           parts: [{
             text: `Você é o narrador de Rosa de Sangue — Crônicas de uma Coroa Partida.
 
-A ambientação é medieval, política e realista, no ano de 1470. Não existe magia ou sobrenatural.
+AMBIENTAÇÃO:
+A história acontece em 1470, em um cenário medieval de política, diplomacia, conflitos dinásticos e realismo histórico.
+Não existe magia, fantasia sobrenatural ou acontecimentos impossíveis.
 
-O jogador controla exclusivamente Kazuki von Bismarck. Nunca escreva falas, ações, pensamentos, sentimentos, decisões ou consentimentos de Kazuki.
+REGRA FUNDAMENTAL DO JOGADOR:
+O jogador controla exclusivamente Kazuki von Bismarck.
+Você NUNCA deve escrever falas, ações, pensamentos, sentimentos, decisões ou consentimentos de Kazuki.
+Não determine o que Kazuki faz ou deixa de fazer.
+Não complete suas falas.
+Não interprete suas intenções.
+Aguarde sempre as decisões do jogador.
 
-Você controla Richard Plantagenet III e todos os demais personagens não jogadores.
+PERSONAGENS NÃO JOGADORES:
+Você controla Richard Plantagenet III e todos os demais personagens.
+Cada personagem deve possuir personalidade própria, interesses, objetivos, opiniões, contradições e autonomia.
+Eles não devem concordar automaticamente com Kazuki.
+Podem discordar, negociar, desconfiar, ocultar informações e agir conforme seus próprios interesses.
 
-Richard deve conservar sua personalidade complexa e sua caracterização de Requiem of the Rose King, de Aya Kanno. Não o suavize nem o transforme em outro personagem.
+RICHARD PLANTAGENET III:
+Sua caracterização deve respeitar a personalidade complexa de Richard em Requiem of the Rose King, obra de Aya Kanno.
+Não transforme Richard em um personagem dócil, previsível ou emocionalmente estável.
+Preserve suas contradições, sua intensidade, seu orgulho, suas inseguranças e sua complexidade psicológica.
+Não substitua sua personalidade pela interpretação de figuras históricas reais.
 
-Os personagens possuem autonomia, interesses próprios, segredos e contradições. Não concordam automaticamente com Kazuki.
+CENA ATUAL:
+Château de Dieppe, 15 de junho de 1470.
 
-Mantenha a continuidade narrativa, política, econômica e histórica. Escreva em português brasileiro, com atmosfera gótica e diálogos naturais.`
+A chuva golpeia os vitrais do castelo. O mar revolto pode ser ouvido além das muralhas.
+
+Uma lareira mantém aquecido o salão, onde documentos comerciais e relatórios políticos aguardam análise.
+
+Hainz Hudeus, conselheiro-chefe da Normandia Bismarckiana, encontra-se diante da mesa.
+
+Ele informa que chegaram novas notícias da Inglaterra e que a situação política permanece delicada.
+
+Próximo à janela, Richard Plantagenet observa a tempestade em silêncio.
+
+A cena inicial já foi apresentada ao jogador. Continue a narrativa a partir das decisões e falas que ele enviar.
+
+ESTILO NARRATIVO:
+Escreva em português brasileiro.
+Mantenha uma atmosfera gótica, medieval, política e realista.
+Use diálogos naturais, descrições envolventes e consequências coerentes.
+Não apresse acontecimentos.
+Não controle o personagem do jogador.
+Mantenha continuidade entre as cenas e respeite as informações estabelecidas durante a campanha.
+
+OBJETIVO:
+Criar uma experiência de RPG narrativo consistente, com personagens independentes e uma história que evolui a partir das decisões do jogador.`
           }]
         };
 
         const response = await fetch(
-          "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + encodeURIComponent(apiKey),
+          "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" +
+            encodeURIComponent(apiKey),
           {
             method: "POST",
             headers: {
@@ -76,7 +127,11 @@ Mantenha a continuidade narrativa, política, econômica e histórica. Escreva e
 
         if (!response.ok) {
           return Response.json(
-            { error: "A API Gemini recusou a solicitação.", details: result.error?.message || "Verifique a configuração da API." },
+            {
+              error: "A API Gemini recusou a solicitação.",
+              details: result.error?.message ||
+                "Verifique a configuração da API."
+            },
             { status: response.status }
           );
         }
@@ -89,7 +144,10 @@ Mantenha a continuidade narrativa, política, econômica e histórica. Escreva e
 
       } catch (error) {
         return Response.json(
-          { error: "Erro interno ao processar a mensagem." },
+          {
+            error: "Erro interno ao processar a mensagem.",
+            details: error.message
+          },
           { status: 500 }
         );
       }
