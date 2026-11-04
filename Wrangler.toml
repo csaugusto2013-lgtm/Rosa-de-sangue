@@ -1,5 +1,6 @@
+
 name = "rosa-de-sangue"
-main = "worker.js"
+main = "Worker.js"
 compatibility_date = "2026-11-04"
 
 [assets]
