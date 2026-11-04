@@ -1,0 +1,13 @@
+
+{
+  "name": "Rosa de Sangue — Crônicas de uma Coroa Partida",
+  "short_name": "Rosa de Sangue",
+  "description": "RPG narrativo medieval, político e gótico.",
+  "lang": "pt-BR",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#160d12",
+  "theme_color": "#160d12"
+}
